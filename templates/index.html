@@ -1,0 +1,77 @@
+<!-- Save this as templates/index.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Адвент-календарь IT</title>
+    <style>
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid black; padding: 8px; text-align: left; }
+        form { margin: 0; }
+    </style>
+</head>
+<body>
+    <h1>Адвент-календарь IT</h1>
+    <table>
+        <tr>
+            <th>Дата</th>
+            <th>Оглавление</th>
+            <th>Описание задания</th>
+            <th>Код</th>
+            <th>Комментарий</th>
+        </tr>
+        {% for task in tasks %}
+        {% set i = loop.index0 %}
+        <tr>
+            <td>{{ task.date }}</td>
+            <td>{{ task.title }}</td>
+            <td>{{ task.desc }}</td>
+            <td>
+                {% if task.code %}
+                    {% if task.code == 'Пропущено' %}
+                        {{ task.code }}
+                    {% elif '.' in task.code and not task.code.startswith('http') %}  <!-- Предполагаем, что если есть точка и не http, то файл -->
+                        <a href="/uploads/{{ task.code }}" download>{{ task.code }}</a>
+                    {% else %}
+                        <a href="{{ task.code }}" target="_blank">{{ task.code }}</a>
+                    {% endif %}
+                {% else %}
+                    <!-- Форма для ссылки -->
+                    <form method="post">
+                        <input type="hidden" name="task_index" value="{{ i }}">
+                        <input type="hidden" name="action" value="add_code_link">
+                        <input type="text" name="code_link" placeholder="Ссылка на код">
+                        <button type="submit">Добавить ссылку</button>
+                    </form>
+                    <!-- Форма для файла -->
+                    <form method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="task_index" value="{{ i }}">
+                        <input type="hidden" name="action" value="add_code_file">
+                        <input type="file" name="code_file">
+                        <button type="submit">Загрузить файл</button>
+                    </form>
+                    <!-- Кнопка пропустить -->
+                    <form method="post">
+                        <input type="hidden" name="task_index" value="{{ i }}">
+                        <input type="hidden" name="action" value="skip_code">
+                        <button type="submit">Пропустить</button>
+                    </form>
+                {% endif %}
+            </td>
+            <td>
+                {% if task.comment %}
+                    {{ task.comment }}
+                {% else %}
+                    <form method="post">
+                        <input type="hidden" name="task_index" value="{{ i }}">
+                        <input type="hidden" name="action" value="add_comment">
+                        <input type="text" name="comment" placeholder="Комментарий">
+                        <button type="submit">Добавить комментарий</button>
+                    </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
